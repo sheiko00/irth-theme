@@ -15,9 +15,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <link rel="stylesheet" href="{{ 'irth.css' | asset_url }}">
 <script>
-// Shopify Storefront API config
+// Shopify config
 window.SHOPIFY_STORE = 'irth-13.myshopify.com';
 window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
+// CDN base for theme assets (used by irth.js for product images)
+window.SHOPIFY_CDN = "{{ 'irth.css' | asset_url | split: 'irth.css' | first }}";
 </script>
 </head>
 <body>
@@ -73,7 +75,7 @@ window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
     <a href="#journal" data-i18n="nav.journal">Journal</a>
   </div>
   <div class="brand">
-    <img src="irth-template/assets/irth-logo.png" alt="IRTH" />
+    <img src="{{ 'irth-logo-gold.png' | asset_url }}" alt="IRTH" />
     <span>IRTH</span>
   </div>
   <div class="right">
@@ -116,7 +118,7 @@ window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
   <div class="haze"></div>
 
   <div class="content">
-    <div class="logo-wrap"><img src="irth-template/assets/irth-logo.png" alt="IRTH"></div>
+    <div class="logo-wrap"><img src="{{ 'irth-logo-gold.png' | asset_url }}" alt="IRTH"></div>
     <div class="ar" style="margin-top:34px">إرث من الأرض… يُحكى جيلاً بعد جيل</div>
     <h1 class="eng" data-i18n="hero.title">HERITAGE &amp; LUXURY</h1>
     <div class="tag" data-i18n="hero.tag">IRTHMADINA.COM · EST. MMXXVI</div>
@@ -147,7 +149,7 @@ window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
         <div class="signature reveal delay-3" data-i18n="phil.sig">— IRTH House · Cairo · MMXXVI</div>
       </div>
       <div class="vignette reveal delay-2">
-        <img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_05_28 AM.png" alt="IRTH Heritage — Madinah craftsmanship"/>
+        <img src="{{ 'lifestyle-philosophy.png' | asset_url }}" alt="IRTH Heritage — Madinah craftsmanship"/>
         <div class="meta"><span data-i18n="phil.metaA">THE PRAYER RUG · NO. 01</span><span>I.</span></div>
       </div>
     </div>
@@ -223,16 +225,16 @@ window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
       <div class="col-stage">
         <div class="panels" id="colPanels">
           <div class="col-panel active" data-idx="0">
-            <img src="irth-template/uploads/prod-dates-gift.png" alt="Dates & Confections">
+            <img src="{{ 'col-dates.png' | asset_url }}" alt="Dates & Confections">
           </div>
           <div class="col-panel" data-idx="1">
-            <img src="irth-template/uploads/prod-sidr-honey.png" alt="Honey & Sidr">
+            <img src="{{ 'col-honey.png' | asset_url }}" alt="Honey & Sidr">
           </div>
           <div class="col-panel" data-idx="2">
-            <img src="irth-template/assets/products/incense-burner.png" alt="Incense & Fragrance">
+            <img src="{{ 'col-fragrance.png' | asset_url }}" alt="Incense & Fragrance">
           </div>
           <div class="col-panel" data-idx="3">
-            <img src="irth-template/uploads/prod-prayer-rug.png" alt="Spiritual Heirlooms">
+            <img src="{{ 'col-spiritual.png' | asset_url }}" alt="Spiritual Heirlooms">
           </div>
         </div>
         <div class="info">
@@ -333,7 +335,7 @@ window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
         <div class="glow"></div>
         <div class="object gift-orbit" id="giftObject">
           <div class="box">
-            <div class="face top"><div class="emblem"><img src="irth-template/assets/irth-logo.png"></div></div>
+            <div class="face top"><div class="emblem"><img src="{{ 'irth-logo-gold.png' | asset_url }}"></div></div>
             <div class="face bottom"></div>
             <div class="face left"></div>
             <div class="face right"></div>
@@ -719,7 +721,7 @@ window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
   <div class="container">
     <div class="row">
       <div class="brand">
-        <img src="irth-template/assets/irth-logo.png" alt="IRTH">
+        <img src="{{ 'irth-logo-gold.png' | asset_url }}" alt="IRTH">
         <div class="word">IRTHMADINA.COM</div>
         <p data-i18n="ft.tag">A heritage house composing quiet objects for those who remember.</p>
       </div>
