@@ -48,9 +48,9 @@
   }
   .loader.gone{opacity:0;visibility:hidden;pointer-events:none;}
   .loader .mark{
-    width:120px;height:120px;
-    background:url('IRTH56789.png') center/contain no-repeat;
-    filter:drop-shadow(0 0 35px rgba(201,164,92,.6));
+    width:180px;height:180px;
+    background:url('irth-logo-gold.png') center/contain no-repeat;
+    filter:drop-shadow(0 0 40px rgba(201,164,92,.7));
     animation:stampIn 1.1s cubic-bezier(.22,1,.36,1) forwards;
     opacity:0;
   }
@@ -208,9 +208,9 @@
     z-index:5;text-align:center;padding:0 24px;
   }
   .hero .logo-wrap{
-    width:170px;height:170px;position:relative;
+    width:160px;height:160px;position:relative;
+    margin-top:72px; /* clear fixed nav (70px) so logo doesn't overlap */
     animation:floatY 6s ease-in-out infinite;
-    /* NO filter here — filter creates isolated compositing group, breaking mix-blend-mode on child img */
   }
   .hero .logo-wrap::before{
     content:"";position:absolute;inset:-40%;
@@ -942,9 +942,9 @@
   @keyframes cardIn{to{opacity:1;transform:none;}}
   .shop-card:hover{border-color:rgba(231,201,138,.45);transform:translateY(-4px);}
   .shop-card .img{
-    aspect-ratio:4/5;position:relative;overflow:hidden;
+    aspect-ratio:1/1;position:relative;overflow:hidden;
     background:
-      radial-gradient(ellipse at 50% 65%, rgba(231,201,138,.1), transparent 65%),
+      radial-gradient(ellipse at 50% 50%, rgba(231,201,138,.1), transparent 65%),
       linear-gradient(180deg, #14100a 0%, #0a0805 100%);
     display:flex;align-items:center;justify-content:center;
   }
@@ -1518,11 +1518,13 @@
   @media (max-width:768px){.gallery-grid{grid-template-columns:1fr;}.gallery-grid .g-item:nth-child(1){grid-column:1;height:280px;}.gallery-grid .g-item{height:220px !important;}}
 
   /* ═══ GALLERY MASONRY (rebuilt) ═══ */
-  .gallery-masonry{columns:4;column-gap:6px;margin-top:52px;}
-  .gallery-masonry .gm-item{break-inside:avoid;margin-bottom:6px;overflow:hidden;cursor:pointer;position:relative;}
-  .gallery-masonry .gm-item img{width:100%;display:block;transition:transform .65s ease;}
-  .gallery-masonry .gm-item:hover img{transform:scale(1.04);}
+  /* 3×3 uniform grid — 9 curated images */
+  .gallery-masonry{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:52px;}
+  .gallery-masonry .gm-item{aspect-ratio:1/1;overflow:hidden;cursor:pointer;position:relative;}
+  .gallery-masonry .gm-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .65s ease;}
+  .gallery-masonry .gm-item:hover img{transform:scale(1.06);}
   .gallery-masonry .gm-item::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(5,13,10,.5),transparent 50%);opacity:0;transition:opacity .4s;}
+  @media(max-width:600px){.gallery-masonry{grid-template-columns:repeat(2,1fr);}}
   .gallery-masonry .gm-item:hover::after{opacity:1;}
   @media (max-width:1024px){.gallery-masonry{columns:3;}}
   @media (max-width:768px){.gallery-masonry{columns:2;}}
