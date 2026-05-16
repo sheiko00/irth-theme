@@ -154,15 +154,130 @@ giftStage.addEventListener('mouseleave', ()=>{
 const audio = document.getElementById('audio');
 const audioLabel = document.getElementById('audioLabel');
 const ambientAudio = document.getElementById('ambientAudio');
+
+/* ── Procedural Desert Wind + Sand Layer ──────────────────────
+   Generates wind (pink noise → bandpass) + sand shimmer (filtered
+   noise LFO) using Web Audio API. No audio file required.
+   Activated on first unmute to respect autoplay policy.
+   ─────────────────────────────────────────────────────────── */
+let windCtx = null;
+let windGain = null;
+let sandGain = null;
+let windRunning = false;
+
+function buildPinkNoise(ctx) {
+  const bufferSize = ctx.sampleRate * 2; // 2s looping buffer
+  const buf = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  // Paul Kellett pink noise approximation
+  let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0;
+  for (let i = 0; i < bufferSize; i++) {
+    const w = Math.random() * 2 - 1;
+    b0 = 0.99886*b0 + w*0.0555179; b1 = 0.99332*b1 + w*0.0750759;
+    b2 = 0.96900*b2 + w*0.1538520; b3 = 0.86650*b3 + w*0.3104856;
+    b4 = 0.55000*b4 + w*0.5329522; b5 = -0.7616*b5 - w*0.0168980;
+    data[i] = (b0+b1+b2+b3+b4+b5+b6 + w*0.5362) / 7;
+    b6 = w * 0.115926;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  return src;
+}
+
+function startDesertWind(ctx) {
+  if (windRunning) return;
+  windRunning = true;
+
+  // ── WIND layer (low rumble + mid sweep) ──
+  const windNoise = buildPinkNoise(ctx);
+
+  const windBP = ctx.createBiquadFilter();
+  windBP.type = 'bandpass';
+  windBP.frequency.value = 320;
+  windBP.Q.value = 0.6;
+
+  const windLP = ctx.createBiquadFilter();
+  windLP.type = 'lowpass';
+  windLP.frequency.value = 900;
+
+  windGain = ctx.createGain();
+  windGain.gain.value = 0.045; // very subtle
+
+  // LFO to animate wind intensity (0.08 Hz = ~12s cycle)
+  const windLFO = ctx.createOscillator();
+  windLFO.type = 'sine';
+  windLFO.frequency.value = 0.08;
+  const windLFOGain = ctx.createGain();
+  windLFOGain.gain.value = 0.018;
+  windLFO.connect(windLFOGain);
+  windLFOGain.connect(windGain.gain);
+  windLFO.start();
+
+  windNoise.connect(windBP);
+  windBP.connect(windLP);
+  windLP.connect(windGain);
+  windGain.connect(ctx.destination);
+  windNoise.start();
+
+  // ── SAND shimmer layer (high sibilance) ──
+  const sandNoise = buildPinkNoise(ctx);
+
+  const sandHP = ctx.createBiquadFilter();
+  sandHP.type = 'highpass';
+  sandHP.frequency.value = 4200;
+
+  const sandBP = ctx.createBiquadFilter();
+  sandBP.type = 'bandpass';
+  sandBP.frequency.value = 6800;
+  sandBP.Q.value = 1.2;
+
+  sandGain = ctx.createGain();
+  sandGain.gain.value = 0.018;
+
+  // Slower shimmer LFO (0.05 Hz = 20s cycle)
+  const sandLFO = ctx.createOscillator();
+  sandLFO.type = 'sine';
+  sandLFO.frequency.value = 0.05;
+  const sandLFOGain = ctx.createGain();
+  sandLFOGain.gain.value = 0.012;
+  sandLFO.connect(sandLFOGain);
+  sandLFOGain.connect(sandGain.gain);
+  sandLFO.start();
+
+  sandNoise.connect(sandHP);
+  sandHP.connect(sandBP);
+  sandBP.connect(sandGain);
+  sandGain.connect(ctx.destination);
+  sandNoise.start();
+}
+
+function stopDesertWind() {
+  if (windGain) { windGain.gain.setTargetAtTime(0, windCtx.currentTime, 0.5); }
+  if (sandGain) { sandGain.gain.setTargetAtTime(0, windCtx.currentTime, 0.5); }
+}
+
 audio.addEventListener('click', () => {
   audio.classList.toggle('muted');
   const muted = audio.classList.contains('muted');
   const lang = document.documentElement.getAttribute('lang') || 'en';
   audioLabel.setAttribute('data-i18n', muted ? 'audio.off' : 'audio.on');
   audioLabel.textContent = translations[lang] ? translations[lang][muted ? 'audio.off' : 'audio.on'] : (muted ? 'AMBIENT · OFF' : 'AMBIENT · ON');
+
+  if (!muted) {
+    // Init shared AudioContext on first user gesture
+    if (!windCtx) { windCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    if (windCtx.state === 'suspended') { windCtx.resume(); }
+    startDesertWind(windCtx);
+    if (windGain) { windGain.gain.setTargetAtTime(0.045, windCtx.currentTime, 1.2); }
+    if (sandGain) { sandGain.gain.setTargetAtTime(0.018, windCtx.currentTime, 1.2); }
+  } else {
+    stopDesertWind();
+  }
+
   if (ambientAudio) {
     if (muted) { ambientAudio.pause(); }
-    else { ambientAudio.volume = 0.18; ambientAudio.play().catch(()=>{}); }
+    else { ambientAudio.volume = 0.16; ambientAudio.play().catch(()=>{}); }
   }
 });
 
