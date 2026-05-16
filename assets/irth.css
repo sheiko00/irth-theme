@@ -717,7 +717,7 @@
     display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:48px;
   }
   @media (max-width:900px){footer .row{grid-template-columns:1fr 1fr;gap:36px}}
-  footer .brand img{width:46px;filter:drop-shadow(0 0 14px rgba(201,164,92,.4));}
+  footer .brand img{width:46px;filter:drop-shadow(0 0 14px rgba(201,164,92,.4));mix-blend-mode:screen;background:transparent;}
   footer .brand .word{margin-top:12px;font-family:'Cinzel',serif;letter-spacing:.5em;color:var(--gold);font-size:11px;text-indent:.5em;}
   footer .brand p{margin-top:20px;color:rgba(244,236,224,.55);font-size:15px;line-height:1.6;max-width:36ch;}
   footer h4{font-family:'Cinzel',serif;font-size:10px;letter-spacing:.4em;color:var(--gold);margin-bottom:18px;}

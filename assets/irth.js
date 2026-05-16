@@ -772,9 +772,9 @@ const REAL_IMGS = {
   'frankincense-30':       CDN + 'incense-burner-2.png',
   'white-musk-5':          CDN + 'incense-burner.png',
   'brass-burner':          CDN + 'incense-burner-2.png',
-  'aqeeq-misbaha':         CDN + 'IRTH56789.png',
-  'amber-misbaha':         CDN + 'IRTH56789.png',
-  'crystal-misbaha':       CDN + 'IRTH56789.png',
+  'aqeeq-misbaha':         CDN + 'incense-burner.png',
+  'amber-misbaha':         CDN + 'incense-burner.png',
+  'crystal-misbaha':       CDN + 'incense-burner.png',
   'siwak-set':             CDN + 'prod-madinah-mint.png',
   'zamzam-vessel':         CDN + 'prod-dates-gift.png',
   'karamah-medium':        CDN + 'prod-dates-gift.png',
@@ -786,6 +786,18 @@ PRODUCTS.forEach(p => { if (REAL_IMGS[p.id]) p.img = REAL_IMGS[p.id]; });
 
 // Attach generated SVG markup to every product still missing a real photo
 PRODUCTS.forEach(p => { if (!p.img) p._svgFallback = productSVG(p); });
+
+// Image error handler — replaces broken img with SVG fallback
+window._imgErr = function(img) {
+  const id = img.getAttribute('data-fallback-id');
+  const p = id && PRODUCTS.find(x => x.id === id);
+  if (!p) { img.style.display = 'none'; return; }
+  if (!p._svgFallback) p._svgFallback = productSVG(p);
+  const div = document.createElement('div');
+  div.className = 'svg-label';
+  div.innerHTML = p._svgFallback;
+  img.parentNode.replaceChild(div, img);
+};
 
 function fmtPrice(n){
   const lang = document.documentElement.getAttribute('lang') || 'en';
@@ -829,7 +841,7 @@ function renderShop(filter){
     card.innerHTML = `
       ${ribbonHtml}
       <div class="img">
-        ${p.img ? `<img src="${p.img}" alt="${p.name}" loading="lazy">` : `<div class="svg-label">${p._svgFallback||''}</div>`}
+        ${p.img ? `<img src="${p.img}" alt="${p.name}" loading="lazy" data-fallback-id="${p.id}" onerror="window._imgErr&&window._imgErr(this)">` : `<div class="svg-label">${p._svgFallback||''}</div>`}
         <div class="cert"><span>${lang === 'ar' ? 'شهادة أصالة' : 'CERTIFIED'} · ${certSerial(p)}</span></div>
         <button class="quick-view" data-view="${p.id}" type="button" aria-label="${lang === 'ar' ? 'عرض' : 'View'}">
           <span>${lang === 'ar' ? 'عرضُ القطعة' : 'VIEW PIECE'}</span>
