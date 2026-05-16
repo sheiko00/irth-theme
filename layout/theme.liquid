@@ -1,0 +1,782 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+{{ content_for_header }}
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>IRTH · إرث — Pure Heritage, Lasting Impact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Cinzel:wght@400;500;600&family=Cairo:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/split-type@0.3.4/umd/index.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="{{ 'irth.css' | asset_url }}">
+<script>
+// Shopify Storefront API config
+window.SHOPIFY_STORE = 'irth-13.myshopify.com';
+window.SHOPIFY_STOREFRONT_TOKEN = '10157ba19a30aaf8c1ed5b0b0c6c9da9';
+</script>
+</head>
+<body>
+
+<div id="scrollBar"></div>
+<div id="filmGrain" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="cursor-trail" aria-hidden="true"></canvas>
+<canvas id="ar-trail" aria-hidden="true"></canvas>
+
+<!-- Cart Drawer -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-hidden="true">
+  <div class="head">
+    <h3 data-i18n="cart.title">YOUR BASKET</h3>
+    <button class="close" id="cartClose" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-foot" id="cartFoot" hidden>
+    <div class="row"><span class="l" data-i18n="cart.sub">SUBTOTAL</span><span class="r" id="cartSub">0 EGP</span></div>
+    <div class="row"><span class="l" data-i18n="cart.ship">DELIVERY</span><span class="r" data-i18n="cart.free">FREE</span></div>
+    <div class="row total"><span class="l" data-i18n="cart.total">TOTAL</span><span class="r" id="cartTotal">0 EGP</span></div>
+    <p class="note" data-i18n="cart.note">Each piece arrives in matte-black presentation with a numbered Certificate of Authenticity.</p>
+    <button class="checkout" id="cartCheckout" type="button" data-i18n="cart.checkout" onclick="shopifyCheckout()">CHECKOUT VIA WHATSAPP</button>
+  </div>
+</aside>
+
+<!-- Product Detail Modal -->
+<div class="pd-overlay" id="pdOverlay" aria-hidden="true">
+  <article class="pd" id="pd" role="dialog" aria-modal="true">
+    <button class="close" id="pdClose" type="button" aria-label="Close">✕</button>
+    <div class="img" id="pdImg"></div>
+    <div class="body" id="pdBody"></div>
+  </article>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="loader" id="loader">
+  <div class="mark" id="loaderMark"></div>
+  <div class="bar"></div>
+  <div class="word" data-i18n="loader.word">A HERITAGE UNFOLDS</div>
+</div>
+
+<nav class="top" id="topnav">
+  <div class="links">
+    <a href="#shop" data-i18n="nav.shop">Shop</a>
+    <a href="#collections" data-i18n="nav.collections">Collections</a>
+    <a href="#philosophy" data-i18n="nav.philosophy">Heritage</a>
+    <a href="#gift" data-i18n="nav.gift">Gifting</a>
+    <a href="#journal" data-i18n="nav.journal">Journal</a>
+  </div>
+  <div class="brand">
+    <img src="irth-template/assets/irth-logo.png" alt="IRTH" />
+    <span>IRTH</span>
+  </div>
+  <div class="right">
+    <span class="lang" id="langToggle" role="button" tabindex="0">العربية</span>
+    <button class="basket" id="basketBtn" type="button"><span data-i18n="nav.basket">Basket</span> <span class="basket-count" id="basketCount">0</span></button>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Navigation">
+  <a href="#shop" data-i18n="nav.shop">Shop</a>
+  <a href="#collections" data-i18n="nav.collections">Collections</a>
+  <a href="#philosophy" data-i18n="nav.philosophy">Heritage</a>
+  <a href="#gift" data-i18n="nav.gift">Gifting</a>
+  <a href="#journal" data-i18n="nav.journal">Journal</a>
+  <button class="close-menu" id="closeMenu">✕ CLOSE</button>
+</div>
+
+<!-- ——————————————— HERO ——————————————— -->
+<section class="hero" id="hero" data-screen-label="01 Hero">
+  <canvas id="hero-shader" aria-hidden="true"></canvas>
+  <div class="sky"></div>
+  <div class="rays"></div>
+  <div class="sun"></div>
+
+  <div class="madinah-arch"></div>
+  <div class="dunes">
+    <div class="dune dune-far" data-parallax="0.15"></div>
+    <div class="dune dune-mid" data-parallax="0.3"></div>
+    <div class="dune dune-near" data-parallax="0.55"></div>
+  </div>
+
+  <video class="camel-video" id="camelVideo" muted playsinline preload="auto" loop>
+    <source src="irth-template/assets/camels-walking.mp4" type="video/mp4">
+  </video>
+  <canvas class="particles" id="particles"></canvas>
+  <div class="haze"></div>
+
+  <div class="content">
+    <div class="logo-wrap"><img src="irth-template/assets/irth-logo.png" alt="IRTH"></div>
+    <div class="ar" style="margin-top:34px">إرث من الأرض… يُحكى جيلاً بعد جيل</div>
+    <h1 class="eng" data-i18n="hero.title">HERITAGE &amp; LUXURY</h1>
+    <div class="tag" data-i18n="hero.tag">IRTHMADINA.COM · EST. MMXXVI</div>
+    <a class="cta" href="#collections" data-cursor="hover">
+      <span data-i18n="hero.cta">Discover the Collection</span>
+      <span class="arrow"></span>
+    </a>
+  </div>
+
+  <div class="scroll-hint">
+    <span data-i18n="hero.scroll">SCROLL</span>
+    <div class="line"></div>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+<!-- ——————————————— PHILOSOPHY ——————————————— -->
+<section class="philosophy" id="philosophy" data-screen-label="02 Philosophy">
+  <div class="container">
+    <div class="grid">
+      <div>
+        <div class="reveal eyebrow" data-i18n="phil.eyebrow">— I · The House</div>
+        <h2 class="display reveal delay-1" data-i18n-html="phil.title">A piece of <em>Madinah,</em><br/>composed in <em>Cairo.</em></h2>
+        <div class="body">
+          <p class="lede reveal delay-2" data-i18n="phil.p1">IRTH (إرث) is the Arabic word for what is inherited — passed down through hands, through generations, through a quiet act of remembering. We are an Egyptian house carrying the spiritual stillness of Madinah into objects made for the home.</p>
+          <p class="lede reveal delay-3" data-i18n="phil.p2">Every prayer rug is woven, every misbaha is strung, every box of dates is sealed with the same intention: that what is given should be remembered. Each piece arrives with a Certificate of Authenticity — a quiet record that it was made by a single pair of hands.</p>
+        </div>
+        <div class="signature reveal delay-3" data-i18n="phil.sig">— IRTH House · Cairo · MMXXVI</div>
+      </div>
+      <div class="vignette reveal delay-2">
+        <img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_05_28 AM.png" alt="IRTH Heritage — Madinah craftsmanship"/>
+        <div class="meta"><span data-i18n="phil.metaA">THE PRAYER RUG · NO. 01</span><span>I.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— MARQUEE ——————————————— -->
+<div class="marquee" aria-hidden="true">
+  <div class="track">
+    <span><em>إرث</em></span><span class="dot">✦</span>
+    <span>Heritage · Luxury · Slowness</span><span class="dot">✦</span>
+    <span><em>Madinah</em> · MMXXVI</span><span class="dot">✦</span>
+    <span>Hand-foiled in 24k Gold</span><span class="dot">✦</span>
+    <span><em>إرث</em></span><span class="dot">✦</span>
+    <span>Heritage · Luxury · Slowness</span><span class="dot">✦</span>
+    <span><em>Madinah</em> · MMXXVI</span><span class="dot">✦</span>
+    <span>Hand-foiled in 24k Gold</span><span class="dot">✦</span>
+  </div>
+</div>
+
+<div class="gold-rule"></div>
+<!-- ——————————————— COLLECTIONS ——————————————— -->
+<section class="collections" id="collections" data-screen-label="03 Collections">
+  <div class="container">
+    <div class="col-head">
+      <div>
+        <div class="reveal eyebrow" data-i18n="col.eyebrow">— II · Curated Collections</div>
+        <h2 class="display reveal delay-1" data-i18n-html="col.title">Four <em>chapters</em>,<br/>one quiet <em>language</em>.</h2>
+      </div>
+      <div class="reveal delay-2 small" data-i18n="col.chapter">CHAPTER 01 / 04</div>
+    </div>
+
+    <div class="collection-stage reveal delay-2">
+      <div class="col-list" id="colList">
+        <div class="col-item active" data-idx="0" data-target="dates">
+          <span class="num">01</span>
+          <div>
+            <div class="name" data-i18n="col.n1">Dates & Confections</div>
+            <div class="ar">التمور والحلوى</div>
+          </div>
+          <span class="arrow">→</span>
+          <span class="indicator"></span>
+        </div>
+        <div class="col-item" data-idx="1" data-target="honey">
+          <span class="num">02</span>
+          <div>
+            <div class="name" data-i18n="col.n2">Honey & Sidr</div>
+            <div class="ar">العسل والسدر</div>
+          </div>
+          <span class="arrow">→</span>
+          <span class="indicator"></span>
+        </div>
+        <div class="col-item" data-idx="2" data-target="fragrance">
+          <span class="num">03</span>
+          <div>
+            <div class="name" data-i18n="col.n3">Incense & Fragrance</div>
+            <div class="ar">البخور والعطور</div>
+          </div>
+          <span class="arrow">→</span>
+          <span class="indicator"></span>
+        </div>
+        <div class="col-item" data-idx="3" data-target="spiritual">
+          <span class="num">04</span>
+          <div>
+            <div class="name" data-i18n="col.n4">Spiritual Heirlooms</div>
+            <div class="ar">الأكسسوارات الروحية</div>
+          </div>
+          <span class="arrow">→</span>
+          <span class="indicator"></span>
+        </div>
+      </div>
+
+      <div class="col-stage">
+        <div class="panels" id="colPanels">
+          <div class="col-panel active" data-idx="0">
+            <img src="irth-template/uploads/prod-dates-gift.png" alt="Dates & Confections">
+          </div>
+          <div class="col-panel" data-idx="1">
+            <img src="irth-template/uploads/prod-sidr-honey.png" alt="Honey & Sidr">
+          </div>
+          <div class="col-panel" data-idx="2">
+            <img src="irth-template/assets/products/incense-burner.png" alt="Incense & Fragrance">
+          </div>
+          <div class="col-panel" data-idx="3">
+            <img src="irth-template/uploads/prod-prayer-rug.png" alt="Spiritual Heirlooms">
+          </div>
+        </div>
+        <div class="info">
+          <span id="colName">DATES & CONFECTIONS</span>
+          <span class="price" id="colPrice">from 280 EGP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— SHOP ——————————————— -->
+<section class="shop" id="shop" data-screen-label="04 Shop">
+  <div class="container">
+    <div class="shop-head">
+      <div>
+        <div class="reveal eyebrow" data-i18n="sh.eyebrow">— III · The Shop</div>
+        <h2 class="display reveal delay-1" data-i18n-html="sh.title">Composed slowly. <em>Sent with care.</em></h2>
+        <p class="lede reveal delay-2" data-i18n="sh.sub">Each piece arrives boxed in matte black, sealed with a satin ribbon, and accompanied by a hand-numbered Certificate of Authenticity. Free white-glove delivery across Egypt.</p>
+      </div>
+    </div>
+
+    <div class="featured-grid" id="featuredGrid">
+      <!-- 8 featured products injected by JS -->
+    </div>
+    <div class="featured-cta reveal">
+      <a href="shop.html" class="btn">VIEW FULL COLLECTION</a>
+      <p class="featured-cta-sub">42 products · Four chapters of Hijazi heritage</p>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— SHIPPING / PAYMENTS STRIP ——————————————— -->
+<div class="ship-strip">
+  <div class="container">
+    <div class="row">
+      <span data-i18n="strip.s1">FREE WHITE-GLOVE DELIVERY · EGYPT</span>
+      <span data-i18n="strip.s2">DHL EXPRESS · WORLDWIDE</span>
+      <span data-i18n="strip.s3">PAYMOB · INSTAPAY · VISA · COD</span>
+      <span data-i18n="strip.s4">WHATSAPP CHECKOUT · 24H REPLY</span>
+    </div>
+  </div>
+</div>
+
+<!-- ——————————————— AUTHENTICITY & DOCUMENTATION ——————————————— -->
+<section class="authenticity" id="authenticity" data-screen-label="05 Authenticity">
+  <div class="container">
+    <div class="reveal eyebrow" data-i18n="auth.eyebrow">— IV · No claims without proof</div>
+    <h2 class="display reveal delay-1" data-i18n-html="auth.title">Four <em>quiet documents,</em><br/>folded into <em>every box.</em></h2>
+    <p class="lede reveal delay-2" data-i18n="auth.sub">Every IRTH order arrives with a hand-numbered Certificate of Authenticity, a Certificate of Origin from source, an ISO-accredited Certificate of Analysis where applicable, and a QR code that links to the lab report — no claims without proof.</p>
+    <div class="auth-grid reveal delay-2">
+      <div class="auth-cell">
+        <div class="num">01</div>
+        <h4 data-i18n="auth.t1">Certificate of Origin</h4>
+        <p data-i18n="auth.p1">Every Madinah date, every gram of Yemeni sidr honey, every Taif rose — sealed with a signed Certificate of Origin from the source farm or apiary.</p>
+      </div>
+      <div class="auth-cell">
+        <div class="num">02</div>
+        <h4 data-i18n="auth.t2">Certificate of Analysis</h4>
+        <p data-i18n="auth.p2">Honey, dates, herbs and oils are batch-tested in an ISO 17025 accredited lab. The COA travels with the jar — never the other way around.</p>
+      </div>
+      <div class="auth-cell">
+        <div class="num">03</div>
+        <h4 data-i18n="auth.t3">QR Authenticity Code</h4>
+        <p data-i18n="auth.p3">A unique QR pressed onto every box opens the batch record: source, lab report, packing date, and the artisan who closed the seal.</p>
+      </div>
+      <div class="auth-cell">
+        <div class="num">04</div>
+        <h4 data-i18n="auth.t4">Heirloom Packaging</h4>
+        <p data-i18n="auth.p4">Charcoal-black presentation, hand-pressed 24-carat gold emblem, Madinah-green ribbon. Made to be reused, kept, remembered.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— FULL BLEED PAUSE ——————————————— -->
+<div class="full-pause" aria-hidden="true"></div>
+
+<!-- ——————————————— RITUAL ——————————————— -->
+<section class="ritual" id="ritual" data-screen-label="05 Ritual">
+  <div class="ritual-bg" id="ritualBg"></div>
+  <div class="ritual-overlay"></div>
+  <div class="ritual-copy">
+    <div class="ar reveal">لكلِّ شيءٍ روح… وروحُ العطاءِ النيّة</div>
+    <h2 class="display reveal delay-1">The <em>ritual</em><br/>of giving.</h2>
+    <p class="reveal delay-2">Every IRTH piece begins long before it is wrapped — in the choosing of the source, the calibration of the weight, the silence of the atelier at the moment of sealing.</p>
+    <a class="cta reveal delay-3" href="#gift"><span>Compose a Gift</span><span class="arrow"></span></a>
+  </div>
+</section>
+
+<div class="gold-rule"></div>
+<!-- ——————————————— GIFT / CUSTOM ORDERS ——————————————— -->
+<section class="gift" id="gift" data-screen-label="05 Gift & Custom Orders">
+  <div class="container">
+    <div class="grid">
+      <div class="gift-stage" id="giftStage" data-cursor="hover">
+        <div class="floor"></div>
+        <div class="glow"></div>
+        <div class="object gift-orbit" id="giftObject">
+          <div class="box">
+            <div class="face top"><div class="emblem"><img src="irth-template/assets/irth-logo.png"></div></div>
+            <div class="face bottom"></div>
+            <div class="face left"></div>
+            <div class="face right"></div>
+            <div class="face front"></div>
+            <div class="face back"></div>
+            <div class="face ribbon-h"></div>
+            <div class="face ribbon-v"></div>
+            <div class="face knot"></div>
+          </div>
+          <div class="gift-float-item"></div>
+          <div class="gift-float-item"></div>
+          <div class="gift-float-item"></div>
+        </div>
+      </div>
+
+      <div class="gift-info">
+        <div class="reveal eyebrow" data-i18n="gift.eyebrow">— IV · Bespoke Gifting</div>
+        <h2 class="display reveal delay-1" data-i18n-html="gift.title">A gift, <em>composed</em><br/>for one recipient.</h2>
+        <p class="lede reveal delay-2" style="margin-top:24px;" data-i18n="gift.body">Choose the pieces, the ribbon, and the dedication. Each bespoke gift is hand-assembled in our Cairo atelier, presented in matte-black with a satin ribbon and a hand-numbered Certificate of Authenticity addressed to the recipient by name.</p>
+        <div class="checks reveal delay-3">
+          <div data-i18n="gift.c1">HAND-NUMBERED CERTIFICATE</div>
+          <div data-i18n="gift.c2">NASKH-CALLIGRAPHED DEDICATION</div>
+          <div data-i18n="gift.c3">MATTE BLACK PRESENTATION BOX</div>
+          <div data-i18n="gift.c4">FREE WHITE-GLOVE DELIVERY</div>
+        </div>
+        <a class="cta reveal delay-3" href="#custom" style="margin-top:42px;">
+          <span data-i18n="gift.cta">Compose a Bespoke Gift</span><span class="arrow"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ——————————————— JOURNAL ——————————————— -->
+<section class="journal" id="journal" data-screen-label="07 Journal" style="display:none">
+  <div class="container">
+    <div class="col-head">
+      <div>
+        <div class="reveal eyebrow" data-i18n="journal.eyebrow">— VI · The Journal</div>
+        <h2 class="display reveal delay-1" data-i18n-html="journal.title">Letters from <em>the road,</em><br/>told <em>slowly.</em></h2>
+      </div>
+      <div class="reveal delay-2 small" data-i18n="journal.meta">DISPATCH 01 / 03</div>
+    </div>
+
+    <div class="journal-grid">
+      <article class="journal-card reveal">
+        <div class="journal-thumb"><img src="irth-template/assets/scene-village.png" alt=""></div>
+        <div class="journal-body">
+          <div class="journal-meta">
+            <span data-i18n="journal.k1">CHRONICLE · 01</span>
+            <span data-i18n="journal.d1">SPRING · MMXXVI</span>
+          </div>
+          <h3 class="journal-title" data-i18n="journal.t1">The Date Palms of Madinah</h3>
+          <div class="journal-ar" data-i18n="journal.ar1">من نخيل المدينة</div>
+          <p class="journal-excerpt" data-i18n="journal.e1">A morning walked between the rows of palms at Quba — counting the slow harvest of Ajwa, Sukkari, and Anbara.</p>
+          <a href="#" class="journal-read" data-i18n="journal.r1">Read the dispatch →</a>
+        </div>
+      </article>
+
+      <article class="journal-card reveal delay-1">
+        <div class="journal-thumb"><img src="irth-template/assets/scene-craft.png" alt=""></div>
+        <div class="journal-body">
+          <div class="journal-meta">
+            <span data-i18n="journal.k2">CHRONICLE · 02</span>
+            <span data-i18n="journal.d2">WINTER · MMXXVI</span>
+          </div>
+          <h3 class="journal-title" data-i18n="journal.t2">A Letter on Slowness</h3>
+          <div class="journal-ar" data-i18n="journal.ar2">رسالةٌ في التأنّي</div>
+          <p class="journal-excerpt" data-i18n="journal.e2">We do not measure our parcels by speed. They are measured by the steadiness of the hand that folds the linen.</p>
+          <a href="#" class="journal-read" data-i18n="journal.r2">Read the dispatch →</a>
+        </div>
+      </article>
+
+      <article class="journal-card reveal delay-2">
+        <div class="journal-thumb"><img src="irth-template/assets/scene-arch.jpeg" alt=""></div>
+        <div class="journal-body">
+          <div class="journal-meta">
+            <span data-i18n="journal.k3">CHRONICLE · 03</span>
+            <span data-i18n="journal.d3">AUTUMN · MMXXVI</span>
+          </div>
+          <h3 class="journal-title" data-i18n="journal.t3">On Foiling in Twenty-Four Carat</h3>
+          <div class="journal-ar" data-i18n="journal.ar3">في تذهيب العيار الرابع والعشرين</div>
+          <p class="journal-excerpt" data-i18n="journal.e3">A note from our master gilder in Jeddah, who has pressed gold by hand for thirty-one years.</p>
+          <a href="#" class="journal-read" data-i18n="journal.r3">Read the dispatch →</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— CRAFTSMANSHIP ——————————————— -->
+<section class="craft" id="craft" data-screen-label="07 Craftsmanship" style="display:none">
+  <div class="container">
+    <div class="reveal eyebrow" data-i18n="cr.eyebrow">— VI · Craft & Material</div>
+    <h2 class="display reveal delay-1" data-i18n-html="cr.title">Six <em>materials.</em><br/>One slow <em>discipline.</em></h2>
+    <div class="grid">
+      <div class="craft-cell">
+        <div>
+          <div class="num">01</div>
+          <h3 data-i18n="cr.t1">Embossed Leather</h3>
+          <p data-i18n="cr.p1">Vegetable-tanned in Taif, debossed with the IRTH crest under 12 tonnes of warm pressure.</p>
+        </div>
+        <div class="swatch sw-leather"></div>
+      </div>
+      <div class="craft-cell">
+        <div>
+          <div class="num">02</div>
+          <h3 data-i18n="cr.t2">Uncoated Paper</h3>
+          <p data-i18n="cr.p2">Cotton-stock wrapping, made to age. The grain catches light the way old letters do.</p>
+        </div>
+        <div class="swatch sw-paper"></div>
+      </div>
+      <div class="craft-cell">
+        <div>
+          <div class="num">03</div>
+          <h3 data-i18n="cr.t3">24-Carat Gold Foil</h3>
+          <p data-i18n="cr.p3">Each emblem hand-pressed by a single artisan in Jeddah — never machine-stamped.</p>
+        </div>
+        <div class="swatch sw-gold"></div>
+      </div>
+      <div class="craft-cell">
+        <div>
+          <div class="num">04</div>
+          <h3 data-i18n="cr.t4">Royal-Green Linen</h3>
+          <p data-i18n="cr.p4">Dyed in iron-mordant tradition. The colour deepens with light, never fades against it.</p>
+        </div>
+        <div class="swatch sw-fabric"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— GALLERY ——————————————— -->
+<section class="gallery" id="gallery" data-screen-label="08 Gallery">
+  <div class="container">
+    <div class="gal-head">
+      <div class="reveal eyebrow">— V · From the Atelier</div>
+      <h2 class="display reveal delay-1">Quietly <em>composed.</em><br/>Carefully <em>sent.</em></h2>
+    </div>
+    <div class="gallery-masonry" id="galleryMasonry">
+      <div class="gm-item reveal" data-lb="0"><img src="irth-template/uploads/1111.png" alt="IRTH Heritage" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="1"><img src="irth-template/uploads/22222.png" alt="IRTH Craft" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="2"><img src="irth-template/uploads/5555.png" alt="IRTH Atelier" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="3"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_16_10 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="4"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_19_32 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="5"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_20_58 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="6"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_22_26 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="7"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_24_35 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="8"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_25_52 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="9"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_29_32 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="10"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_31_46 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="11"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_34_18 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="12"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_36_08 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="13"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_38_38 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="14"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_39_13 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="15"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_40_51 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="16"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_43_02 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="17"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_44_36 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="18"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_47_43 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="19"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_52_05 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="20"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_54_21 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="21"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_56_28 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="22"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_58_04 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="23"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 03_59_40 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="24"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_02_14 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="25"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_05_28 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="26"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_11_51 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="27"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_18_10 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="28"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_19_31 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="29"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_21_24 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="30"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_24_03 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="31"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_25_49 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="32"><img src="irth-template/uploads/ChatGPT Image May 10, 2026, 04_31_11 AM.png" alt="IRTH" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="33"><img src="irth-template/uploads/WhatsApp Image 2026-05-08 at 11.00.32 PM.jpeg" alt="IRTH Real" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="34"><img src="irth-template/uploads/WhatsApp Image 2026-05-09 at 1.08.43 AM (1).jpeg" alt="IRTH Real" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="35"><img src="irth-template/assets/brand-board.jpeg" alt="IRTH Brand" loading="lazy"></div>
+      <div class="gm-item reveal" data-lb="36"><img src="irth-template/uploads/real_photos_upload-1778674399553.png" alt="IRTH" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+  <button id="lb-close" aria-label="Close">✕</button>
+  <button id="lb-prev" aria-label="Previous">‹</button>
+  <img id="lb-img" src="" alt="">
+  <button id="lb-next" aria-label="Next">›</button>
+  <div id="lb-counter"></div>
+</div>
+
+<!-- ——————————————— CUSTOM ORDERS ——————————————— -->
+<section class="custom" id="custom" data-screen-label="08 Custom Orders">
+  <div class="container">
+    <div class="custom-head">
+      <div>
+        <div class="reveal eyebrow" data-i18n="cu.eyebrow">— VII · Custom Orders</div>
+        <h2 class="display reveal delay-1" data-i18n-html="cu.title">Tell us <em>who it is for.</em><br/>We will compose <em>the rest.</em></h2>
+        <p class="lede reveal delay-2" data-i18n="cu.sub">For weddings, Ramadan, Eid, or a quiet personal gesture — we hand-assemble bespoke heritage boxes around a single intention. Send us a brief and we will reply within one working day.</p>
+      </div>
+    </div>
+
+    <div class="custom-grid">
+      <div class="custom-card reveal delay-1">
+        <div class="custom-num">01</div>
+        <h3 data-i18n="cu.s1t">Send a brief</h3>
+        <p data-i18n="cu.s1p">Tell us the occasion, the recipient, your budget, and any pieces you have in mind. WhatsApp, email, or the form below — whichever is easiest.</p>
+      </div>
+      <div class="custom-card reveal delay-2">
+        <div class="custom-num">02</div>
+        <h3 data-i18n="cu.s2t">We compose a proposal</h3>
+        <p data-i18n="cu.s2p">Within one working day you receive a styled mood-board with the proposed pieces, the dedication card mock-up, and the final EGP price.</p>
+      </div>
+      <div class="custom-card reveal delay-3">
+        <div class="custom-num">03</div>
+        <h3 data-i18n="cu.s3t">We hand-assemble &amp; deliver</h3>
+        <p data-i18n="cu.s3p">Once approved, your gift is composed, sealed with a numbered Certificate of Authenticity, and delivered by white-glove courier anywhere in Egypt.</p>
+      </div>
+    </div>
+
+    <form class="custom-form reveal delay-2" id="customForm" onsubmit="return false;">
+      <div class="custom-form-grid">
+        <label>
+          <span data-i18n="cu.fn">Your name</span>
+          <input type="text" name="name" required>
+        </label>
+        <label>
+          <span data-i18n="cu.fp">Phone or WhatsApp</span>
+          <input type="tel" name="phone" required>
+        </label>
+        <label>
+          <span data-i18n="cu.fo">Occasion</span>
+          <select name="occasion">
+            <option data-i18n="cu.fo1">Wedding</option>
+            <option data-i18n="cu.fo2">Ramadan</option>
+            <option data-i18n="cu.fo3">Eid</option>
+            <option data-i18n="cu.fo4">Corporate gifting</option>
+            <option data-i18n="cu.fo5">Personal</option>
+            <option data-i18n="cu.fo6">Other</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="cu.fb">Budget (EGP)</span>
+          <select name="budget">
+            <option>2,000 – 5,000</option>
+            <option>5,000 – 10,000</option>
+            <option>10,000 – 25,000</option>
+            <option>25,000+</option>
+          </select>
+        </label>
+        <label class="full">
+          <span data-i18n="cu.fm">Tell us a little about who it is for</span>
+          <textarea name="brief" rows="3"></textarea>
+        </label>
+      </div>
+      <button type="submit" class="cta" data-form-submit>
+        <span data-i18n="cu.fcta">Send the brief</span><span class="arrow"></span>
+      </button>
+      <div class="custom-form-success" data-i18n="cu.fok" hidden>Thank you. We have your brief — expect a reply within one working day.</div>
+    </form>
+  </div>
+</section>
+
+<!-- ——————————————— TESTIMONIALS ——————————————— -->
+<section class="testimonials" id="testimonials" data-screen-label="09 Testimonials">
+  <div class="container">
+    <div class="t-head">
+      <div>
+        <div class="reveal eyebrow" data-i18n="te.eyebrow">— VIII · Voices</div>
+        <h2 class="display reveal delay-1" data-i18n-html="te.title">A few <em>letters</em><br/>from those who remembered.</h2>
+      </div>
+    </div>
+
+    <div class="t-grid">
+      <figure class="t-card reveal">
+        <div class="t-mark">"</div>
+        <blockquote data-i18n="te.q1">The prayer rug arrived in the most beautiful matte black box I have ever held. My father wept when he unrolled it. We will pass it down.</blockquote>
+        <figcaption>
+          <span class="t-name" data-i18n="te.n1">Yasmin El-Sayed</span>
+          <span class="t-loc" data-i18n="te.l1">Heliopolis, Cairo</span>
+        </figcaption>
+      </figure>
+      <figure class="t-card reveal delay-1">
+        <div class="t-mark">"</div>
+        <blockquote data-i18n="te.q2">We ordered eighty bespoke Ramadan boxes for our team. Each one arrived with the recipient's name written in Naskh. Not a single corner was rushed.</blockquote>
+        <figcaption>
+          <span class="t-name" data-i18n="te.n2">Omar Hosny</span>
+          <span class="t-loc" data-i18n="te.l2">Founder · Beit Cairo</span>
+        </figcaption>
+      </figure>
+      <figure class="t-card reveal delay-2">
+        <div class="t-mark">"</div>
+        <blockquote data-i18n="te.q3">The misbaha is heavier than I expected — in the best way. The green agate catches the light like still water. I haven't put it down since.</blockquote>
+        <figcaption>
+          <span class="t-name" data-i18n="te.n3">Mahmoud Fawzy</span>
+          <span class="t-loc" data-i18n="te.l3">Alexandria</span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="t-stats reveal delay-2">
+      <div class="t-stat"><div class="n">1,240+</div><div class="l" data-i18n="te.s1">pieces composed by hand</div></div>
+      <div class="t-stat"><div class="n">98%</div><div class="l" data-i18n="te.s2">customer return rate</div></div>
+      <div class="t-stat"><div class="n">27</div><div class="l" data-i18n="te.s3">cities delivered to</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— FAQ ——————————————— -->
+<section class="faq" id="faq" data-screen-label="10 FAQ">
+  <div class="container">
+    <div class="faq-layout">
+      <div>
+        <div class="reveal eyebrow" data-i18n="fq.eyebrow">— IX · Questions</div>
+        <h2 class="display reveal delay-1" data-i18n-html="fq.title">A few <em>asked,</em><br/>quietly <em>answered.</em></h2>
+        <p class="lede reveal delay-2" data-i18n="fq.sub">If yours is not here, write to us at hello@irthmadina.com — we reply personally, within one working day.</p>
+      </div>
+      <div class="faq-list reveal delay-2">
+        <details class="faq-item">
+          <summary><span data-i18n="fq.q1">Where are IRTH products made?</span><span class="faq-icon"></span></summary>
+          <p data-i18n="fq.a1">Every piece is hand-assembled in our atelier in Cairo. The prayer rugs are woven in collaboration with weavers from Akhmim, the misbahas are strung in-house, and the dates are sourced from Madinah and Siwa.</p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="fq.q2">How long does delivery take?</span><span class="faq-icon"></span></summary>
+          <p data-i18n="fq.a2">Stock pieces ship within 48 hours. Bespoke gifts take 5–7 working days. All deliveries inside Egypt are free and white-glove. International is available on request.</p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="fq.q3">Can I add a dedication card?</span><span class="faq-icon"></span></summary>
+          <p data-i18n="fq.a3">Yes — every order includes a folded card written in Naskh script by our in-house calligrapher, addressed to the recipient by name. Dedications up to 40 words are complimentary.</p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="fq.q4">Do you offer corporate gifting?</span><span class="faq-icon"></span></summary>
+          <p data-i18n="fq.a4">Yes. We compose bespoke corporate boxes from 25 pieces upward, with co-branded Certificates of Authenticity and dedications for each recipient. Minimum 14 days lead time.</p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="fq.q5">What is your return policy?</span><span class="faq-icon"></span></summary>
+          <p data-i18n="fq.a5">Stock pieces may be returned, unopened, within 7 days for a full refund. Bespoke and personalised pieces are final sale. We replace any damaged piece, no questions asked.</p>
+        </details>
+        <details class="faq-item">
+          <summary><span data-i18n="fq.q6">How do I care for the prayer rug?</span><span class="faq-icon"></span></summary>
+          <p data-i18n="fq.a6">Shake gently, do not machine-wash. Spot clean with a damp cloth. Once a year, air it for an afternoon in indirect sun — never direct. With this, it will outlast you.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— NEWSLETTER ——————————————— -->
+<section class="newsletter" id="newsletter" data-screen-label="11 Newsletter" style="display:none">
+  <div class="container">
+    <div class="nl-wrap reveal">
+      <div class="nl-eyebrow" data-i18n="nl.eyebrow">— X · Letters from the House</div>
+      <h2 class="display" data-i18n-html="nl.title">A <em>quiet letter,</em><br/>once a month.</h2>
+      <p data-i18n="nl.sub">New pieces, limited drops, the occasional essay from the atelier. No noise, no discount codes — only what is worth reading.</p>
+      <form class="nl-form" id="nlForm" onsubmit="return false;">
+        <input type="email" placeholder="your@email.com" required>
+        <button type="submit" class="cta" data-form-submit>
+          <span data-i18n="nl.cta">Subscribe</span><span class="arrow"></span>
+        </button>
+      </form>
+      <div class="nl-success" data-i18n="nl.ok" hidden>Thank you. Your first letter arrives at the next new moon.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— FINAL ——————————————— -->
+<section class="final" id="final" data-screen-label="09 Closing">
+  <div class="arch"></div>
+  <div class="glow"></div>
+  <div class="copy">
+    <div class="ar reveal">إرث من الأرض… يُحكى جيلاً بعد جيل</div>
+    <h2 class="reveal delay-1" data-i18n-html="fin.title">A <em>legacy</em><br/>told in <em>whispers.</em></h2>
+    <p class="reveal delay-2" data-i18n="fin.body">Step into the heritage universe of IRTH — where every object is composed slowly, given carefully, remembered always.</p>
+    <div class="actions reveal delay-3">
+      <a class="cta" href="#collections"><span data-i18n="fin.cta1">Enter the Collection</span><span class="arrow"></span></a>
+      <a class="cta" href="#" style="border-color:rgba(244,236,224,.25);color:rgba(244,236,224,.65);"><span data-i18n="fin.cta2">Receive Letters</span><span class="arrow"></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ——————————————— FOOTER ——————————————— -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="brand">
+        <img src="irth-template/assets/irth-logo.png" alt="IRTH">
+        <div class="word">IRTHMADINA.COM</div>
+        <p data-i18n="ft.tag">A heritage house composing quiet objects for those who remember.</p>
+      </div>
+      <div>
+        <h4 data-i18n="ft.h1">HOUSE</h4>
+        <ul>
+          <li><a href="#" data-i18n="ft.l11">Philosophy</a></li>
+          <li><a href="#" data-i18n="ft.l12">Journal</a></li>
+          <li><a href="#" data-i18n="ft.l13">Chronicles</a></li>
+          <li><a href="#" data-i18n="ft.l14">Stockists</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="ft.h2">COLLECTIONS</h4>
+        <ul>
+          <li><a href="#" data-i18n="ft.l21">Confections</a></li>
+          <li><a href="#" data-i18n="ft.l22">Fragrance</a></li>
+          <li><a href="#" data-i18n="ft.l23">Misbaha</a></li>
+          <li><a href="#" data-i18n="ft.l24">Leather</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="ft.h3">CONTACT</h4>
+        <ul>
+          <li><a href="#">hello@irthmadina.com</a></li>
+          <li><a href="#">+20 (0) 2 555 0001</a></li>
+          <li><a href="#">Instagram · @irthmadina</a></li>
+          <li><a href="#">Cairo · @irthmadina · facebook/IRTH</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <span data-i18n="ft.legal1">© MMXXVI · IRTH HOUSE · ALL RIGHTS RESERVED</span>
+      <span data-i18n="ft.legal2">HAND-CRAFTED IN CAIRO · EGYPT</span>
+    </div>
+  </div>
+</footer>
+
+<!-- WhatsApp float -->
+<a class="wa-float" id="waFloat" href="https://wa.me/201000000000" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <span class="pulse-dot"></span>
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" fill="#C9A45C"/>
+    <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.984-1.406A9.96 9.96 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.96 7.96 0 01-4.076-1.115l-.292-.173-3.027.854.856-3.036-.19-.31A7.96 7.96 0 014 12c0-4.418 3.582-8 8-8s8 3.582 8 8-3.582 8-8 8z" fill="#C9A45C"/>
+  </svg>
+</a>
+
+<audio id="ambientAudio" loop preload="none">
+  <source src="irth-template/uploads/26994-361277998_medium.mp4" type="video/mp4">
+</audio>
+
+<div class="audio" id="audio">
+  <span class="bars"><span></span><span></span><span></span><span></span></span>
+  <span id="audioLabel" data-i18n="audio.on">AMBIENT · ON</span>
+</div>
+
+<script src="{{ 'irth.js' | asset_url }}" defer></script>
+{{ content_for_layout }}
+</body>
+</html>
