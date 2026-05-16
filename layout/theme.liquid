@@ -112,7 +112,7 @@ window.SHOPIFY_CDN = "{{ 'irth.css' | asset_url | split: 'irth.css' | first }}";
   </div>
 
   <video class="camel-video" id="camelVideo" muted playsinline preload="auto" loop>
-    <source src="irth-template/assets/camels-walking.mp4" type="video/mp4">
+    <source src="{{ 'camels-walking.mp4' | asset_url }}" type="video/mp4">
   </video>
   <canvas class="particles" id="particles"></canvas>
   <div class="haze"></div>
@@ -383,7 +383,7 @@ window.SHOPIFY_CDN = "{{ 'irth.css' | asset_url | split: 'irth.css' | first }}";
 
     <div class="journal-grid">
       <article class="journal-card reveal">
-        <div class="journal-thumb"><img src="irth-template/assets/scene-village.png" alt=""></div>
+        <div class="journal-thumb"><img src="{{ 'scene-village.png' | asset_url }}" alt=""></div>
         <div class="journal-body">
           <div class="journal-meta">
             <span data-i18n="journal.k1">CHRONICLE · 01</span>
@@ -397,7 +397,7 @@ window.SHOPIFY_CDN = "{{ 'irth.css' | asset_url | split: 'irth.css' | first }}";
       </article>
 
       <article class="journal-card reveal delay-1">
-        <div class="journal-thumb"><img src="irth-template/assets/scene-craft.png" alt=""></div>
+        <div class="journal-thumb"><img src="{{ 'scene-craft.png' | asset_url }}" alt=""></div>
         <div class="journal-body">
           <div class="journal-meta">
             <span data-i18n="journal.k2">CHRONICLE · 02</span>
@@ -411,7 +411,7 @@ window.SHOPIFY_CDN = "{{ 'irth.css' | asset_url | split: 'irth.css' | first }}";
       </article>
 
       <article class="journal-card reveal delay-2">
-        <div class="journal-thumb"><img src="irth-template/assets/scene-arch.jpeg" alt=""></div>
+        <div class="journal-thumb"><img src="{{ 'scene-arch.jpeg' | asset_url }}" alt=""></div>
         <div class="journal-body">
           <div class="journal-meta">
             <span data-i18n="journal.k3">CHRONICLE · 03</span>
